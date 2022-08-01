@@ -1,9 +1,7 @@
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from pydantic import BaseModel
-
 from ._types import ModelType, OptionalModelType
-from .utils import gen_list_model, get_model_key, parse_code
+from .utils import check_model_type, gen_list_model, get_model_key, parse_code
 
 
 class Response:
@@ -37,19 +35,22 @@ class Response:
         self.codes: List[str] = []
 
         for code in codes:
-            assert code in DEFAULT_CODE_DESC, "invalid HTTP status code"
+            if code not in DEFAULT_CODE_DESC:
+                raise ValueError("invalid HTTP status code")
             self.codes.append(code)
 
         self.code_models: Dict[str, ModelType] = {}
         self.code_descriptions: Dict[str, Optional[str]] = {}
         for code, model_and_description in code_models.items():
-            assert code in DEFAULT_CODE_DESC, "invalid HTTP status code"
+            if code not in DEFAULT_CODE_DESC:
+                raise ValueError("invalid HTTP status code")
             description: Optional[str] = None
             if isinstance(model_and_description, tuple):
-                assert len(model_and_description) == 2, (
-                    "unexpected number of arguments for a tuple of "
-                    "`pydantic.BaseModel` and HTTP status code description"
-                )
+                if len(model_and_description) != 2:
+                    raise ValueError(
+                        "unexpected number of arguments for a tuple of "
+                        "`pydantic.BaseModel` and HTTP status code description"
+                    )
                 model = model_and_description[0]
                 description = model_and_description[1]
             else:
@@ -60,10 +61,9 @@ class Response:
                 if origin_type is list or origin_type is List:
                     # type is List[BaseModel]
                     model = gen_list_model(getattr(model, "__args__")[0])
-                assert issubclass(model, BaseModel), "invalid `pydantic.BaseModel`"
-                assert description is None or isinstance(
-                    description, str
-                ), "invalid HTTP status code description"
+                check_model_type(model)
+                if description and not isinstance(description, str):
+                    raise ValueError("invalid HTTP status code description")
                 self.code_models[code] = model
             else:
                 self.codes.append(code)

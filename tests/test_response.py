@@ -16,14 +16,19 @@ class NormalClass:
 
 def test_init_response():
     for args, kwargs in [
-        ([200], {}),
         (["HTTP_110"], {}),
-        ([], {"HTTP_200": NormalClass}),
-        ([], {"HTTP_200": (NormalClass, "custom code description")}),
+        ([200], {}),
         ([], {"HTTP_200": (DemoModel, 1)}),
         ([], {"HTTP_200": (DemoModel,)}),
     ]:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
+            Response(*args, **kwargs)
+
+    for args, kwargs in [
+        ([], {"HTTP_200": NormalClass}),
+        ([], {"HTTP_200": (NormalClass, "custom code description")}),
+    ]:
+        with pytest.raises(TypeError):
             Response(*args, **kwargs)
 
     resp = Response("HTTP_200", HTTP_201=DemoModel)

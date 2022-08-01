@@ -223,6 +223,12 @@ def get_model_key(model: ModelType) -> str:
     return f"{model.__name__}.{hash_module_path(module_path=model.__module__)}"
 
 
+def check_model_type(model: ModelType):
+    """check if the input model is sub class of `pydantic.BaseModel`"""
+    if not issubclass(model, BaseModel):
+        raise TypeError("requires pydantic.BaseModel sub class")
+
+
 def get_model_schema(model: ModelType):
     """
     return a dictionary representing the model as JSON Schema with a hashed
@@ -231,8 +237,7 @@ def get_model_schema(model: ModelType):
     :param model: `pydantic.BaseModel` query, json, headers or cookies from
         request or response
     """
-    assert issubclass(model, BaseModel)
-
+    check_model_type(model)
     return model.schema(
         ref_template=f"#/components/schemas/{get_model_key(model)}.{{model}}"
     )
@@ -270,7 +275,7 @@ def gen_list_model(model: Type[BaseModel]) -> Type[BaseModel]:
     """
     generate the correspoding list[model] class for a given model class
     """
-    assert issubclass(model, BaseModel)
+    check_model_type(model)
     ListModel = type(
         f"{model.__name__}List",
         (BaseModel,),
