@@ -1,7 +1,7 @@
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from ._types import ModelType, OptionalModelType
-from .utils import check_model_type, gen_list_model, get_model_key, parse_code
+from .utils import require_pydantic_model, gen_list_model, get_model_key, parse_code
 
 
 class Response:
@@ -61,7 +61,7 @@ class Response:
                 if origin_type is list or origin_type is List:
                     # type is List[BaseModel]
                     model = gen_list_model(getattr(model, "__args__")[0])
-                check_model_type(model)
+                require_pydantic_model(model)
                 if description and not isinstance(description, str):
                     raise ValueError("invalid HTTP status code description")
                 self.code_models[code] = model
