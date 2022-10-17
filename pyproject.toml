@@ -42,6 +42,9 @@ email = [
 falcon = [
     "falcon>=3.0.0",
 ]
+quart = [
+    "quart>=0.18",
+]
 flask = [
     "flask",
 ]

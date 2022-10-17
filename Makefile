@@ -3,7 +3,7 @@ check: lint test
 SOURCE_FILES=spectree tests examples
 
 install:
-	pip install -e .[email,quart,flask,falcon,starlette,dev]
+	pip install -U -e .[email,flask,quart,falcon,starlette,dev]
 
 import_test:
 	pip install -e .[email]
@@ -13,8 +13,7 @@ import_test:
 		pip uninstall $$module -y; \
 	done
 
-test: import_test
-	pip install -U -e .[email,flask,quart,falcon,starlette]
+test: import_test install
 	pytest tests -vv -rs
 
 doc:
@@ -24,7 +23,7 @@ opendoc:
 	cd docs/build/html && python -m http.server
 
 clean:
-	rm -rf build/ dist/ *.egg-info .pytest_cache
+	rm -rf build/ dist/ *.egg-info .pytest_cache .mypy_cache
 	find . -name '*.pyc' -type f -exec rm -rf {} +
 	find . -name '__pycache__' -exec rm -rf {} +
 
@@ -39,7 +38,7 @@ format:
 	isort --project=spectree ${SOURCE_FILES}
 	black ${SOURCE_FILES}
 
-lint:
+lint: install
 	isort --check --diff --project=spectree ${SOURCE_FILES}
 	black --check --diff ${SOURCE_FILES}
 	flake8 ${SOURCE_FILES} --count --show-source --statistics
